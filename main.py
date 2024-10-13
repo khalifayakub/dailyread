@@ -4,6 +4,8 @@ from datetime import datetime
 import schedule
 import time
 from dotenv import load_dotenv
+from flask import Flask
+from threading import Thread
 
 # Load environment variables
 load_dotenv()
@@ -11,6 +13,7 @@ load_dotenv()
 # Telegram Bot Token and Chat ID from environment variables
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
 # Test mode from environment variable
 TEST_MODE = os.getenv('TEST_MODE', 'false').lower() in ('true', '1', 'yes')
 
@@ -18,6 +21,17 @@ TEST_MODE = os.getenv('TEST_MODE', 'false').lower() in ('true', '1', 'yes')
 LINKS_FILE = 'reports.txt'
 
 bot = telebot.TeleBot(TOKEN)
+
+# Flask app for health check
+app = Flask(__name__)
+
+@app.route('/')
+def health_check():
+    return "OK", 200
+
+def run_flask():
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
 
 def send_links():
     if not os.path.exists(LINKS_FILE):
@@ -48,13 +62,15 @@ def send_links():
     except Exception as e:
         print(f"Error sending message: {e}")
 
-
 def main():
     if not TOKEN or not CHAT_ID:
         print("Error: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set in environment variables.")
         return
 
     print("Starting Link Sender...")
+    
+    # Start Flask in a separate thread
+    Thread(target=run_flask).start()
     
     if TEST_MODE:
         print("Running in test mode. Sending links immediately.")
