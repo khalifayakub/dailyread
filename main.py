@@ -1,6 +1,6 @@
 import telebot
 import time
-from telebot.util import WorkerThread
+from threading import Thread
 from flask import Flask
 from config import TELEGRAM_BOT_TOKEN
 from bot import register_commands, register_admin_commands
@@ -27,20 +27,24 @@ def bot_polling():
     while True:
         try:
             print("Starting bot polling...")
-            bot.get_updates(offset=-1)
             bot.polling(none_stop=True, interval=0, timeout=20)
         except Exception as e:
+            bot.get_updates(offset=-1)
             print(f"Bot polling error: {e}")
             time.sleep(15)
+
+def run_flask():
+    app.run(host='0.0.0.0', port=8080)
 
 if __name__ == "__main__":
     initialize_bot()
     # load_initial_links()
     
     # Start bot polling in a separate thread
-    worker = WorkerThread(bot_polling)
-    worker.start()
+    polling_thread = Thread(target=bot_polling)
+    polling_thread.daemon = True
+    polling_thread.start()
     
+    # Start Flask in the main thread
     print("Bot is running...")
-    # Run Flask app
-    app.run(host='0.0.0.0', port=8080)
+    run_flask()
