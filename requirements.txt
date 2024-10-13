@@ -13,3 +13,4 @@ requests==2.32.3
 schedule==1.2.2
 urllib3==2.2.3
 Werkzeug==3.0.4
+pymongo==4.3.3
