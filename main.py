@@ -27,6 +27,7 @@ def bot_polling():
     while True:
         try:
             print("Starting bot polling...")
+            bot.get_updates(offset=-1)
             bot.polling(none_stop=True, interval=0, timeout=20)
         except Exception as e:
             print(f"Bot polling error: {e}")
@@ -34,7 +35,7 @@ def bot_polling():
 
 if __name__ == "__main__":
     initialize_bot()
-    load_initial_links()
+    # load_initial_links()
     
     # Start bot polling in a separate thread
     worker = WorkerThread(bot_polling)
